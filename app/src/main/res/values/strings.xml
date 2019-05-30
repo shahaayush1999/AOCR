@@ -10,4 +10,8 @@
     <string name="statusloadingimage">Loading Image</string>
     <string name="statusimageloadedrunocr">Image Loaded. Run OCR</string>
     <string name="statusimagefailedtoload">Image failed to load</string>
+    <string name="toastnoinfotoaddtocontact">No information to add to contacts!</string>
+    <string name="statusattemptingOCR">Attempting OCR</string>
+    <string name="statusOCRresults">OCR Results</string>
+    <string name="imagesprocessedcount">Images Processed: </string>
 </resources>

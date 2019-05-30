@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.os.Bundle;
 import android.view.View;
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         runOCR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                processImage();
+                new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
             }
         });
 
@@ -97,17 +98,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void processImage() {
-        displayText.setText("Attempting OCR");
-        String OCRresult = null;
-        mTess.setImage(image);
-        OCRresult = mTess.getUTF8Text();
-        System.out.println(OCRresult);
-        extractName(OCRresult);
-        extractEmail(OCRresult);
-        extractPhone(OCRresult);
-        displayText.setText("Attempted OCR");
-    }
+
 
     public void extractName(String str) {
         System.out.println("Getting the Name");
@@ -116,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         Matcher m =  p.matcher(str);
         if(m.find()){
             System.out.println(m.group());
-            displayName.setText(m.group());
+            displayName.setText(m.group()); //change this to use new edittexts, create new ones on the fly
         }
     }
 
@@ -127,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         Matcher m = p.matcher(str);   // get a matcher object
         if(m.find()){
             System.out.println(m.group());
-            displayEmail.setText(m.group());
+            displayEmail.setText(m.group()); //change this to use new edittexts, create new ones on the fly
         }
     }
 
@@ -142,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             str = m.group();
             str = str.replaceAll("[()-]", ""); //to remove brackets and hyphens
             System.out.println(str);
-            displayPhone.setText(str);
+            displayPhone.setText(str); //change this to use new edittexts, create new ones on the fly
         }
     }
 
@@ -215,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             //starting the activity...
             startActivity(intent);
         }else{
-            Toast.makeText(getApplicationContext(), "No information to add to contacts!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.toastnoinfotoaddtocontact, Toast.LENGTH_LONG).show();
         }
 
 
@@ -269,6 +260,47 @@ public class MainActivity extends AppCompatActivity {
                 displayPhone.setText("");
             }
         }
+    }
+
+    //supports multiple images
+    private class ProcessImageTask extends AsyncTask<Bitmap, Integer, Long> {
+
+        protected void onPreExecute(Long result) {
+        }
+
+        protected Long doInBackground(Bitmap... images) {
+            int count = images.length;
+            long totalImagesProcessed = 0;
+
+            for (int i = 0; i < count; i++) {
+                processImage(images[i]);
+                totalImagesProcessed += 1;
+                publishProgress((int) totalImagesProcessed);
+                // Escape early if cancel() is called
+                if (isCancelled()) break;
+            }
+            return totalImagesProcessed;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+            String str = R.string.imagesprocessedcount + progress[0].toString();
+            displayText.setText(str);
+        }
+
+        protected void onPostExecute(Long result) {
+            String str = R.string.imagesprocessedcount + result.toString();
+            displayText.setText(str);
+        }
+    }
+
+    public void processImage(Bitmap OCRimage) {
+        String OCRresult = null;
+        mTess.setImage(OCRimage);
+        OCRresult = mTess.getUTF8Text();
+        System.out.println(OCRresult);
+        extractName(OCRresult);
+        extractEmail(OCRresult);
+        extractPhone(OCRresult);
     }
 
 }
