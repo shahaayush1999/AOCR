@@ -1,0 +1,37 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+	package
+		ADDED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:11-53
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+		ADDED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+	android:versionCode
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+		ADDED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml:17:1-19:12
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+uses-sdk
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+		ADDED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+		ADDED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
+		INJECTED from /Users/osmosmac/Desktop/AOCR/tess-two/AndroidManifest.xml
