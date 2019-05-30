@@ -271,11 +271,10 @@ public class MainActivity extends AppCompatActivity {
         protected Long doInBackground(Bitmap... images) {
             int count = images.length;
             long totalImagesProcessed = 0;
-
             for (int i = 0; i < count; i++) {
                 processImage(images[i]);
                 totalImagesProcessed += 1;
-                publishProgress((int) totalImagesProcessed);
+                publishProgress((int) ((float)totalImagesProcessed / count * 100));
                 // Escape early if cancel() is called
                 if (isCancelled()) break;
             }
@@ -283,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onProgressUpdate(Integer... progress) {
-            String str = R.string.imagesprocessedcount + progress[0].toString();
+            String str = progress[0].toString() + R.string.imagesprocessedpercentage;
             displayText.setText(str);
         }
 
