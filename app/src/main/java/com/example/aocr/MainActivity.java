@@ -39,8 +39,9 @@ public class MainActivity extends AppCompatActivity {
 
     ImageView displayImage;
     Button runOCR;
-    Button pickImageButton;
+    Button imageFromGallery;
     Button openContacts;
+    Button imageFromCamera;
     TextView displayText;
     EditText displayEmail;
     EditText displayPhone;
@@ -55,7 +56,8 @@ public class MainActivity extends AppCompatActivity {
         //Buttons
         runOCR = (Button) findViewById(R.id.textView);
         openContacts = (Button) findViewById(R.id.textView6);
-        pickImageButton = (Button) findViewById(R.id.textView7);
+        imageFromGallery = (Button) findViewById(R.id.textView7);
+        imageFromCamera = (Button) findViewById(R.id.button);
         //Image
         displayImage = (ImageView) findViewById(R.id.imageView);
         //Display field
@@ -64,7 +66,10 @@ public class MainActivity extends AppCompatActivity {
         displayName = (EditText) findViewById(R.id.textView3);
         displayPhone = (EditText) findViewById(R.id.textView4);
         displayEmail = (EditText) findViewById(R.id.textView5);
-
+        //Progress Bar
+        displayProgress = (ProgressBar) findViewById(R.id.progressBar2);
+        //set progress bar to be invisible
+        displayProgress.setVisibility(View.GONE);
 
         //init image
         image = BitmapFactory.decodeResource(getResources(), R.drawable.test_image0);
@@ -79,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         mTess.init(datapath, language);
 
         //import image from gallery
-        pickImageButton.setOnClickListener(new View.OnClickListener() {
+        imageFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openGallery();
@@ -90,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         runOCR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                displayProgress.setVisibility(View.VISIBLE);
                 new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
             }
         });
@@ -225,10 +231,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 100;
     private void openGallery() {
-        //Intent gallery =
-        //        new Intent(Intent.ACTION_PICK,
-        //                android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        //startActivityForResult(gallery, PICK_IMAGE);
+        Intent gallery =
+                new Intent(Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        startActivityForResult(gallery, PICK_IMAGE);
+        /*
         displayText.setText(R.string.statusLoadingImage);
         Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
         getIntent.setType("image/*");
@@ -243,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
         Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
         startActivityForResult(chooserIntent, PICK_IMAGE);
+        */
     }
 
     @Override
@@ -285,13 +293,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onProgressUpdate(Integer... progress) {
-            displayProgress.setProgress(progress[0]);
         }
 
         protected void onPostExecute(Long result) {
-            displayProgress.setProgress(0);
-            String str = R.string.imagesProcessedCount + result.toString();
-            displayText.setText(str);
+            displayProgress.setVisibility(View.GONE);
+            displayText.setText(R.string.statusOCRResults);
         }
     }
 
