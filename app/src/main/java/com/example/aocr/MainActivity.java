@@ -9,8 +9,10 @@ import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.provider.MediaStore;
@@ -36,13 +38,14 @@ public class MainActivity extends AppCompatActivity {
     String datapath = "";
 
     ImageView displayImage;
-    TextView runOCR;
-    TextView pickImageButton;
-    TextView openContacts;
+    Button runOCR;
+    Button pickImageButton;
+    Button openContacts;
     TextView displayText;
     EditText displayEmail;
     EditText displayPhone;
     EditText displayName;
+    ProgressBar displayProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)  {
@@ -50,12 +53,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Buttons
-        runOCR = (TextView) findViewById(R.id.textView);
-        openContacts = (TextView) findViewById(R.id.textView6);
-        pickImageButton = (TextView) findViewById(R.id.textView7);
-        //Display fields
+        runOCR = (Button) findViewById(R.id.textView);
+        openContacts = (Button) findViewById(R.id.textView6);
+        pickImageButton = (Button) findViewById(R.id.textView7);
+        //Image
         displayImage = (ImageView) findViewById(R.id.imageView);
+        //Display field
         displayText = (TextView) findViewById(R.id.textView2);
+        //Editable Display fields
         displayName = (EditText) findViewById(R.id.textView3);
         displayPhone = (EditText) findViewById(R.id.textView4);
         displayEmail = (EditText) findViewById(R.id.textView5);
@@ -97,8 +102,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-
 
     public void extractName(String str) {
         System.out.println("Getting the Name");
@@ -206,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
             //starting the activity...
             startActivity(intent);
         }else{
-            Toast.makeText(getApplicationContext(), R.string.toastnoinfotoaddtocontact, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.toastNoInfoToAddToContact, Toast.LENGTH_LONG).show();
         }
 
 
@@ -226,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
         //        new Intent(Intent.ACTION_PICK,
         //                android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         //startActivityForResult(gallery, PICK_IMAGE);
-        displayText.setText(R.string.statusloadingimage);
+        displayText.setText(R.string.statusLoadingImage);
         Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
         getIntent.setType("image/*");
 
@@ -250,9 +253,9 @@ public class MainActivity extends AppCompatActivity {
             displayImage.setImageURI(imageUri);
             try {
                 image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                displayText.setText(R.string.statusimageloadedrunocr);
+                displayText.setText(R.string.statusImageLoadedRunOCR);
             } catch (Exception e) {
-                displayText.setText(R.string.statusimagefailedtoload);
+                displayText.setText(R.string.statusImageFailedToLoad);
             }
             finally {
                 displayName.setText("");
@@ -282,12 +285,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onProgressUpdate(Integer... progress) {
-            String str = progress[0].toString() + R.string.imagesprocessedpercentage;
-            displayText.setText(str);
+            displayProgress.setProgress(progress[0]);
         }
 
         protected void onPostExecute(Long result) {
-            String str = R.string.imagesprocessedcount + result.toString();
+            displayProgress.setProgress(0);
+            String str = R.string.imagesProcessedCount + result.toString();
             displayText.setText(str);
         }
     }

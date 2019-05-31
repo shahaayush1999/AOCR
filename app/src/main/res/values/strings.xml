@@ -3,16 +3,17 @@
     <string name="addtocontacts">Add to Contacts!</string>
     <string name="runOCR">Run OCR</string>
     <string name="loadImage">Load Image</string>
+    <string name="openCamera">Open Camera</string>
     <string name="name">Name</string>
     <string name="phoneNumber">Number</string>
     <string name="emailID">Email ID</string>
-    <string name="statuspleaseloadimage">Select Image and run OCR</string>
-    <string name="statusloadingimage">Loading Image</string>
-    <string name="statusimageloadedrunocr">Image Loaded. Run OCR</string>
-    <string name="statusimagefailedtoload">Image failed to load</string>
-    <string name="toastnoinfotoaddtocontact">No information to add to contacts!</string>
-    <string name="statusattemptingOCR">Attempting OCR</string>
-    <string name="statusOCRresults">OCR Results</string>
-    <string name="imagesprocessedcount">Images Processed: </string>
-    <string name="imagesprocessedpercentage">% Images Processed: </string>
+    <string name="statusPleaseLoadImage">Select Image and run OCR</string>
+    <string name="statusLoadingImage">Loading Image</string>
+    <string name="statusImageLoadedRunOCR">Image Loaded. Run OCR</string>
+    <string name="statusImageFailedToLoad">Image failed to load</string>
+    <string name="toastNoInfoToAddToContact">No information to add to contacts!</string>
+    <string name="statusAttemptingOCR">Attempting OCR</string>
+    <string name="statusOCRResults">OCR Results</string>
+    <string name="imagesProcessedCount">Images Processed: </string>
+    <string name="imagesProcessedPercentage">% Images Processed: </string>
 </resources>
