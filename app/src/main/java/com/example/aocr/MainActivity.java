@@ -6,8 +6,11 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +52,11 @@ public class MainActivity extends AppCompatActivity {
     EditText displayPhone;
     EditText displayName;
     ProgressBar displayProgress;
+
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+    private String mCurrentPhotoPath;
+    private static final String TAG = "MainActivity";
+    private static final int PICK_IMAGE = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)  {
@@ -88,6 +98,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openGallery();
+            }
+        });
+
+        //import image from Camera
+        imageFromCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCamera();
             }
         });
 
@@ -221,36 +239,49 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        }
-    }
-
-    private static final int PICK_IMAGE = 100;
     private void openGallery() {
         Intent gallery =
                 new Intent(Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         startActivityForResult(gallery, PICK_IMAGE);
-        /*
-        displayText.setText(R.string.statusLoadingImage);
-        Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-        getIntent.setType("image/*");
+    }
 
-        Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        pickIntent.setType("image/*");
+    //doesnt work, fix/replace
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                Log.i(TAG, "IOException");
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
 
-        //try to fit this in the chooserIntent
-        //Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //takePhotoIntent.setType("image/*");
+    //doesnt work, fix/replace
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  // prefix
+                ".jpg",         // suffix
+                storageDir      // directory
+        );
 
-        Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
-        startActivityForResult(chooserIntent, PICK_IMAGE);
-        */
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        return image;
     }
 
     @Override
@@ -271,19 +302,26 @@ public class MainActivity extends AppCompatActivity {
                 displayPhone.setText("");
             }
         }
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            try {
+                image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(mCurrentPhotoPath));
+                displayImage.setImageBitmap(image);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     //supports multiple images
     private class ProcessImageTask extends AsyncTask<Bitmap, Integer, Long> {
-
         protected void onPreExecute(Long result) {
         }
 
         protected Long doInBackground(Bitmap... images) {
             int count = images.length;
             long totalImagesProcessed = 0;
-            for (int i = 0; i < count; i++) {
-                processImage(images[i]);
+            for (Bitmap i : images ) {
+                processImage(i);
                 totalImagesProcessed += 1;
                 publishProgress((int) ((float)totalImagesProcessed / count * 100));
                 // Escape early if cancel() is called
@@ -302,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void processImage(Bitmap OCRimage) {
-        String OCRresult = null;
+        String OCRresult;
         mTess.setImage(OCRimage);
         OCRresult = mTess.getUTF8Text();
         System.out.println(OCRresult);
@@ -310,5 +348,4 @@ public class MainActivity extends AppCompatActivity {
         extractEmail(OCRresult);
         extractPhone(OCRresult);
     }
-
 }
