@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">AOCR</string>
-    <string name="addtocontacts">Add to Contacts!</string>
+    <string name="addToContacts">Add to Contacts</string>
     <string name="runOCR">Run OCR</string>
     <string name="loadImage">Load Image</string>
     <string name="openCamera">Open Camera</string>

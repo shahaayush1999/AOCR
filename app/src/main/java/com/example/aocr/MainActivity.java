@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.provider.MediaStore;
 import android.net.Uri;
+import android.os.Bundle;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
@@ -34,7 +35,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.os.Bundle;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private String mCurrentPhotoPath;
     private static final String TAG = "MainActivity";
     private static final int PICK_IMAGE = 100;
+    String currentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)  {
@@ -248,39 +250,25 @@ public class MainActivity extends AppCompatActivity {
 
     //doesnt work, fix/replace
     private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-                Log.i(TAG, "IOException");
-            }
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
-                startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
-            }
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
 
-    //doesnt work, fix/replace
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
-                imageFileName,  // prefix
-                ".jpg",         // suffix
-                storageDir      // directory
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        currentPhotoPath = image.getAbsolutePath();
         return image;
     }
 
@@ -300,14 +288,6 @@ public class MainActivity extends AppCompatActivity {
                 displayName.setText("");
                 displayEmail.setText("");
                 displayPhone.setText("");
-            }
-        }
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            try {
-                image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(mCurrentPhotoPath));
-                displayImage.setImageBitmap(image);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
