@@ -120,12 +120,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void extractName(String str) {
         System.out.println("Getting the Name");
-        final String NAME_REGEX = "([A-Z]([a-zA-Z]*|\\.) +){1,2}([A-Z][a-zA-Z]+-?)+$";
+        final String NAME_REGEX = "([A-Z]([A-Z]*|\\.) +)([A-Z][A-Z]+-?)";
         Pattern p = Pattern.compile(NAME_REGEX, Pattern.MULTILINE);
         Matcher m =  p.matcher(str);
         if(m.find()){
             System.out.println(m.group());
             displayName.setText(m.group());
+        } else {
+            final String NAME_REGEX2 = "([A-Z]([a-zA-Z]*|\\.) +)([A-Z][a-zA-Z]+-?)+$";
+            p = Pattern.compile(NAME_REGEX2, Pattern.MULTILINE);
+            m =  p.matcher(str);
+            if(m.find()){
+                System.out.println(m.group());
+                displayName.setText(m.group());
+            }
         }
     }
 
