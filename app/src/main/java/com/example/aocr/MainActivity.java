@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     ImageView displayImage;
-    Button runOCR;
     Button imageFromGallery;
     Button openContacts;
     Button imageFromCamera;
@@ -63,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Buttons
-        runOCR = (Button) findViewById(R.id.buttonRunOCR);
         openContacts = (Button) findViewById(R.id.buttonOpenContacts);
         imageFromGallery = (Button) findViewById(R.id.buttonOpenGallery);
         imageFromCamera = (Button) findViewById(R.id.buttonOpenCamera);
@@ -108,15 +106,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openCamera();
-            }
-        });
-
-        //run the OCR on the test_image...
-        runOCR.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayProgress.setVisibility(View.VISIBLE);
-                new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
             }
         });
 
@@ -327,13 +316,18 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
                         displayText.setText(R.string.statusImageLoadedRunOCR);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        displayText.setText(R.string.statusImageFailedToLoad);
-                    } finally {
                         displayName.setText("");
                         displayEmail.setText("");
                         displayPhone.setText("");
+                        displayProgress.setVisibility(View.VISIBLE);
+                        new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        displayText.setText(R.string.statusImageFailedToLoad);
+                        displayName.setText("");
+                        displayEmail.setText("");
+                        displayPhone.setText("");
+                    } finally {
                     }
                     break;
                 case REQUEST_TAKE_PHOTO:
@@ -342,16 +336,22 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         image = BitmapFactory.decodeFile(currentPhotoPath);
                         displayText.setText(R.string.statusImageLoadedRunOCR);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        displayText.setText(R.string.statusImageFailedToLoad);
-                    } finally {
                         displayName.setText("");
                         displayEmail.setText("");
                         displayPhone.setText("");
+                        displayProgress.setVisibility(View.VISIBLE);
+                        new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        displayText.setText(R.string.statusImageFailedToLoad);
+                        displayName.setText("");
+                        displayEmail.setText("");
+                        displayPhone.setText("");
+                    } finally {
                     }
                     break;
             }
+
         }
     }
 
