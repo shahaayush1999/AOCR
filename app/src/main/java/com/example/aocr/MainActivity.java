@@ -1,6 +1,8 @@
 package com.example.aocr;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -35,14 +37,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-
 public class MainActivity extends AppCompatActivity {
-
-    Bitmap image;
-    private TessBaseAPI mTess;
-    String datapath = "";
-
     ImageView displayImage;
     Button runOCR;
     Button imageFromGallery;
@@ -54,11 +49,13 @@ public class MainActivity extends AppCompatActivity {
     EditText displayName;
     ProgressBar displayProgress;
 
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    private String mCurrentPhotoPath;
     private static final String TAG = "MainActivity";
     private static final int PICK_IMAGE = 100;
-    String currentPhotoPath;
+    static final int REQUEST_TAKE_PHOTO = 1;
+    private Bitmap image;
+    private TessBaseAPI mTess;
+    private String datapath = "";
+    private String currentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)  {
@@ -66,25 +63,28 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Buttons
-        runOCR = (Button) findViewById(R.id.textView);
-        openContacts = (Button) findViewById(R.id.textView6);
-        imageFromGallery = (Button) findViewById(R.id.textView7);
-        imageFromCamera = (Button) findViewById(R.id.button);
+        runOCR = (Button) findViewById(R.id.buttonRunOCR);
+        openContacts = (Button) findViewById(R.id.buttonOpenContacts);
+        imageFromGallery = (Button) findViewById(R.id.buttonOpenGallery);
+        imageFromCamera = (Button) findViewById(R.id.buttonOpenCamera);
         //Image
         displayImage = (ImageView) findViewById(R.id.imageView);
         //Display field
-        displayText = (TextView) findViewById(R.id.textView2);
+        displayText = (TextView) findViewById(R.id.statusBar);
         //Editable Display fields
-        displayName = (EditText) findViewById(R.id.textView3);
-        displayPhone = (EditText) findViewById(R.id.textView4);
-        displayEmail = (EditText) findViewById(R.id.textView5);
+        displayName = (EditText) findViewById(R.id.editTextName);
+        displayPhone = (EditText) findViewById(R.id.editTextPhone);
+        displayEmail = (EditText) findViewById(R.id.editTextEmail);
         //Progress Bar
-        displayProgress = (ProgressBar) findViewById(R.id.progressBar2);
+        displayProgress = (ProgressBar) findViewById(R.id.progressBar);
         //set progress bar to be invisible
         displayProgress.setVisibility(View.GONE);
 
         //init image
         image = BitmapFactory.decodeResource(getResources(), R.drawable.test_image0);
+
+        //Clean apps past data
+        cleanAppFiles();
 
         //initialize Tesseract API
         String language = "eng";
@@ -131,12 +131,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void extractName(String str) {
         System.out.println("Getting the Name");
-        final String NAME_REGEX = "^([A-Z]([a-z]*|\\.) *){1,2}([A-Z][a-z]+-?)+$"; //og regex
+        final String NAME_REGEX = "([A-Z]([a-zA-Z]*|\\.) +){1,2}([A-Z][a-zA-Z]+-?)+$";
         Pattern p = Pattern.compile(NAME_REGEX, Pattern.MULTILINE);
         Matcher m =  p.matcher(str);
         if(m.find()){
             System.out.println(m.group());
-            displayName.setText(m.group()); //change this to use new edittexts, create new ones on the fly
+            displayName.setText(m.group());
         }
     }
 
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         Matcher m = p.matcher(str);   // get a matcher object
         if(m.find()){
             System.out.println(m.group());
-            displayEmail.setText(m.group()); //change this to use new edittexts, create new ones on the fly
+            displayEmail.setText(m.group());
         }
     }
 
@@ -162,9 +162,37 @@ public class MainActivity extends AppCompatActivity {
             str = m.group();
             str = str.replaceAll("[()-]", ""); //to remove brackets and hyphens
             System.out.println(str);
-            displayPhone.setText(str); //change this to use new edittexts, create new ones on the fly
+            displayPhone.setText(str);
         }
     }
+
+    public void extractAddress(String str) {
+
+    }
+
+    public void extractPinCode(String str) {
+        System.out.println("Getting PinCode");
+        final String PINCODE_REGEX="^[1-9][0-9]{5}$";
+        Pattern p = Pattern.compile(PINCODE_REGEX, Pattern.MULTILINE);
+        //comment next two lines if anything breaks
+        str = str.replaceAll(" ", "");
+        Matcher m = p.matcher(str);   // get a matcher object
+        if(m.find()){
+            str = m.group();
+            str = str.replaceAll("[()-]", ""); //to remove brackets and hyphens
+            System.out.println(str);
+            //displayPincode.setText(str); //change this to use new edittexts, create new ones on the fly
+        }
+    }
+
+    public void extractJobTitle(String str) {
+
+    }
+
+    public void extractCompanyName(String str) {
+
+    }
+
 
     private void checkFile(File dir) {
         //directory does not exist, but we can successfully create it
@@ -248,11 +276,26 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(gallery, PICK_IMAGE);
     }
 
-    //doesnt work, fix/replace
     private void openCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                // ex.printStackTrace();
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            }
         }
     }
 
@@ -275,19 +318,39 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
-            Uri imageUri = data.getData();
-            displayImage.setImageURI(imageUri);
-            try {
-                image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                displayText.setText(R.string.statusImageLoadedRunOCR);
-            } catch (Exception e) {
-                displayText.setText(R.string.statusImageFailedToLoad);
-            }
-            finally {
-                displayName.setText("");
-                displayEmail.setText("");
-                displayPhone.setText("");
+        if (resultCode == RESULT_OK) {
+            Uri imageUri;
+            switch (requestCode) {
+                case PICK_IMAGE: //the ^ operator is exclusive or operator
+                    imageUri = data.getData();
+                    displayImage.setImageURI(imageUri);
+                    try {
+                        image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                        displayText.setText(R.string.statusImageLoadedRunOCR);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        displayText.setText(R.string.statusImageFailedToLoad);
+                    } finally {
+                        displayName.setText("");
+                        displayEmail.setText("");
+                        displayPhone.setText("");
+                    }
+                    break;
+                case REQUEST_TAKE_PHOTO:
+                    imageUri = Uri.parse(currentPhotoPath);
+                    displayImage.setImageURI(imageUri);
+                    try {
+                        image = BitmapFactory.decodeFile(currentPhotoPath);
+                        displayText.setText(R.string.statusImageLoadedRunOCR);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        displayText.setText(R.string.statusImageFailedToLoad);
+                    } finally {
+                        displayName.setText("");
+                        displayEmail.setText("");
+                        displayPhone.setText("");
+                    }
+                    break;
             }
         }
     }
@@ -327,5 +390,19 @@ public class MainActivity extends AppCompatActivity {
         extractName(OCRresult);
         extractEmail(OCRresult);
         extractPhone(OCRresult);
+        //extractPinCode(OCRresult);
+        //extractAddress(OCRresult);
+        //extractCompanyName(OCRresult);
+    }
+
+    private void cleanAppFiles() {
+        File dir = new File("Android/data/com.example.aocr/files/Pictures");
+        try {
+            for (File child : dir.listFiles())
+                child.delete();
+        }
+        catch(NullPointerException e) {
+            e.getMessage();
+        }
     }
 }
