@@ -25,6 +25,8 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
+import com.google.i18n.phonenumbers.PhoneNumberMatch;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,7 +35,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     EditText displayName;
     ProgressBar displayProgress;
 
-    private static final String TAG = "MainActivity";
     private static final int PICK_IMAGE = 100;
     static final int REQUEST_TAKE_PHOTO = 1;
     private Bitmap image;
@@ -150,9 +153,28 @@ public class MainActivity extends AppCompatActivity {
 
     public void extractPhone(String str){
         System.out.println("Getting Phone Number");
+        PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+        Iterable<PhoneNumberMatch> numberMatches = phoneNumberUtil.findNumbers(str, Locale.US.getCountry());
+        ArrayList<String> data = new ArrayList<>();
+        for(PhoneNumberMatch number : numberMatches){
+            String s = number.rawString();
+            data.add(s);
+        }
+        if (!data.isEmpty()) {
+            try {
+                str = data.get(0);
+                System.out.println(str);
+                displayPhone.setText(str);
+            }catch(IndexOutOfBoundsException e){
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "There is no text!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        /*
+        //Regex method to get phone number, alternative used above = google phone number utility
         final String PHONE_REGEX="\\+?\\d[\\d -]{8,12}\\d"; //original regex (?:^|\D)(\d{3})[)\-. ]*?(\d{3})[\-. ]*?(\d{4})(?:$|\D)
         Pattern p = Pattern.compile(PHONE_REGEX, Pattern.MULTILINE);
-        //comment next two lines if anything breaks
         str = str.replaceAll(" ", "");
         Matcher m = p.matcher(str);   // get a matcher object
         if(m.find()){
@@ -161,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println(str);
             displayPhone.setText(str);
         }
+         */
     }
 
     public void extractAddress(String str) {
@@ -189,8 +212,7 @@ public class MainActivity extends AppCompatActivity {
     public void extractCompanyName(String str) {
 
     }
-
-
+    
     private void checkFile(File dir) {
         //directory does not exist, but we can successfully create it
         if (!dir.exists()&& dir.mkdirs()){
