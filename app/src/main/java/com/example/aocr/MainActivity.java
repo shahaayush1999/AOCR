@@ -52,6 +52,11 @@ public class MainActivity extends AppCompatActivity {
     EditText displayEmail;
     EditText displayPhone;
     EditText displayName;
+    EditText displayCompanyName;
+    EditText displayPosition;
+    EditText displayCity;
+    EditText displayPinCode;
+
     ProgressBar displayProgress;
 
     private static final int PICK_IMAGE = 100;
@@ -78,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
         displayName = (EditText) findViewById(R.id.editTextName);
         displayPhone = (EditText) findViewById(R.id.editTextPhone);
         displayEmail = (EditText) findViewById(R.id.editTextEmail);
+        displayCompanyName = (EditText) findViewById(R.id.editTextCompanyName);
+        displayPosition = (EditText) findViewById(R.id.editTextPosition);
+        displayCity = (EditText) findViewById(R.id.editTextCity);
+        displayPinCode = (EditText) findViewById(R.id.editTextPinCode);
         //Progress Bar
         displayProgress = (ProgressBar) findViewById(R.id.progressBar);
         //set progress bar to be invisible
@@ -244,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
     public String extractPinCode(String str) {
         String returnString = "";
         System.out.println("Getting PinCode");
-        final String PINCODE_REGEX = "[1-9][0-9]{5}\\.?";
+        final String PINCODE_REGEX = " [1-9][0-9]{2} ?[0-9]{3}";
         Pattern p = Pattern.compile(PINCODE_REGEX, Pattern.MULTILINE);
         Matcher m = p.matcher(str);   // get a matcher object
         if (m.find()) {
@@ -260,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
         String[] jobTitlesRegex = {"C[A-Z]O", "Founder", "Consult", "Human", "Manager", "Director", "President", "Director", "Chairman", "Senior", "Head", "Chief", "Officer", "Owner", "General", "Deputy", "Assistant", "Leader", "Staff"};
         System.out.println("Getting the Job Title");
         for (String TITLE_REGEX : jobTitlesRegex) {
-            Pattern p = Pattern.compile("^.*" + TITLE_REGEX + ".*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+            Pattern p = Pattern.compile("^.*" + TITLE_REGEX + "([A_Za-z]* ){0,2}$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
             Matcher m = p.matcher(str);   // get a matcher object
             if (m.find()) {
                 returnString = convertStringFirstLetterCap(m.group());
@@ -272,7 +281,15 @@ public class MainActivity extends AppCompatActivity {
         return returnString;
     }
 
-    //public String extractCompanyName(String str)
+    //todo extract company name from email string. Run validation for gmail/yahoo/outlook/msn etc
+    public String extractCompanyName(String str) {
+        return "";
+    }
+
+    //todo extract city from 1.Pincode, 2.Set of cities
+    public String extractCity(String Str) {
+        return "";
+    }
 
     public String extractWebsite(String str) {
         String returnString;
@@ -417,20 +434,15 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             Uri imageUri;
             switch (requestCode) {
-                case PICK_IMAGE: //the ^ operator is exclusive or operator
+                case PICK_IMAGE:
                     imageUri = data.getData();
                     displayImage.setImageURI(imageUri);
                     try {
                         image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                        displayStatus.setText(R.string.statusImageLoadedRunOCR);
-                        clearFields();
-                        displayProgress.setVisibility(View.VISIBLE);
-                        new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
+                        imageLoadedRunOCR();
                     } catch (Exception e) {
                         e.printStackTrace();
                         displayStatus.setText(R.string.statusImageFailedToLoad);
-                        clearFields();
-                    } finally {
                     }
                     break;
                 case REQUEST_TAKE_PHOTO:
@@ -438,15 +450,10 @@ public class MainActivity extends AppCompatActivity {
                     displayImage.setImageURI(imageUri);
                     try {
                         image = BitmapFactory.decodeFile(currentPhotoPath);
-                        displayStatus.setText(R.string.statusImageLoadedRunOCR);
-                        clearFields();
-                        displayProgress.setVisibility(View.VISIBLE);
-                        new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
+                        imageLoadedRunOCR();
                     } catch (Exception e) {
                         e.printStackTrace();
                         displayStatus.setText(R.string.statusImageFailedToLoad);
-                        clearFields();
-                    } finally {
                     }
                     break;
             }
@@ -454,9 +461,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void imageLoadedRunOCR() {
+        displayStatus.setText(R.string.statusImageLoadedRunOCR);
+        clearFields();
+        new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
+    }
+
     //supports multiple images
     private class ProcessImageTask extends AsyncTask<Bitmap, Integer, Long> {
-        protected void onPreExecute(Long result) {
+        protected void onPreExecute() {
+            displayProgress.setVisibility(View.VISIBLE);
         }
 
         protected Long doInBackground(Bitmap... images) {
@@ -483,7 +497,8 @@ public class MainActivity extends AppCompatActivity {
 
     //todo use company name from the value returned from email and website
     public void processImage(Bitmap OCRimage) {
-        String OCRresult, name, email, phone, pinCode, position, website, address, companyName;
+        String OCRresult, name, email, phone, pinCode, position, website, address, companyName, city;
+        OCRimage = scaleBitmap(OCRimage);
         mTess.setImage(OCRimage);
         OCRresult = mTess.getUTF8Text();
         System.out.println(OCRresult);
@@ -491,16 +506,17 @@ public class MainActivity extends AppCompatActivity {
         email = extractEmail(OCRresult);
         phone = extractPhone(OCRresult);
         pinCode = extractPinCode(OCRresult);
+        city = extractCity(OCRresult);
         position = extractJobTitle(OCRresult);
         //address extractAddress(OCRresult);
-        //companyName = extractCompanyName(OCRresult);
+        companyName = extractCompanyName(OCRresult);
         website = extractWebsite(OCRresult);
-        setFields(name, email, phone);
+        setFields(name, email, phone, companyName, position, city, pinCode);
     }
 
     public Bitmap scaleBitmap(Bitmap yourBitmap) {
-        float scale, newWidth, newHeight, width = yourBitmap.getWidth(), height = yourBitmap.getHeight();
-        scale = (float) Math.sqrt(1000000 / (width * height));
+        float scale, width = yourBitmap.getWidth(), height = yourBitmap.getHeight();
+        scale = (float) Math.sqrt(720*1280 / (width * height));
         Bitmap resized = Bitmap.createScaledBitmap(yourBitmap, (int) (width * scale), (int) (height * scale), true);
         return resized;
     }
@@ -516,10 +532,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    private void setFields(String name, String email, String phone) {
+    private void setFields(String name, String email, String phone, String company, String position, String city, String pinCode) {
         displayName.setText(name);
         displayEmail.setText(email);
         displayPhone.setText(phone);
+        displayCompanyName.setText(company);
+        displayPosition.setText(position);
+        displayCity.setText(city);
+        displayPinCode.setText(pinCode);
     }
 
     private void setStatus(String status) {
@@ -527,8 +547,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void clearFields() {
-        displayName.setText("");
-        displayEmail.setText("");
-        displayPhone.setText("");
+        setFields("","","","", "","","");
     }
 }

@@ -1,12 +1,17 @@
 <resources>
     <string name="app_name">AOCR</string>
+
     <string name="addToContacts">Add to Contacts</string>
-    <string name="runOCR">Run OCR</string>
     <string name="loadImage">Load Image</string>
     <string name="openCamera">Open Camera</string>
     <string name="name">Name</string>
     <string name="phoneNumber">Number</string>
     <string name="emailID">Email ID</string>
+    <string name="companyName">Company name</string>
+    <string name="position">Position at Company</string>
+    <string name="city">City</string>
+    <string name="website">Website URL</string>
+    <string name="pinCode">Pin Code</string>
     <string name="statusPleaseLoadImage">Select Image and run OCR</string>
     <string name="statusLoadingImage">Loading Image</string>
     <string name="statusImageLoadedRunOCR">Image Loaded. Run OCR</string>
