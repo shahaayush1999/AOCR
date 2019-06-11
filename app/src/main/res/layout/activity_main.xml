@@ -13,7 +13,6 @@
         android:layout_width="0dp"
         android:layout_height="228dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:src="@drawable/test_image0"
         app:layout_constraintEnd_toEndOf="parent"
@@ -37,7 +36,7 @@
     <TextView
         android:id="@+id/statusBar"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -54,9 +53,9 @@
     <EditText
         android:id="@+id/editTextName"
         android:layout_width="0dp"
-        android:layout_height="40dp"
+        android:layout_height="30dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="60dp"
         android:layout_marginEnd="20dp"
         android:autofillHints="AUTOFILL_HINT_NAME"
         android:background="@drawable/rounded_edittext"
@@ -64,14 +63,15 @@
         android:hint="@string/name"
         android:inputType="textCapWords"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonOpenGallery"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
         tools:text="@string/name" />
 
     <EditText
         android:id="@+id/editTextPhone"
         android:layout_width="0dp"
-        android:layout_height="40dp"
+        android:layout_height="30dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="20dp"
@@ -88,7 +88,7 @@
     <EditText
         android:id="@+id/editTextEmail"
         android:layout_width="0dp"
-        android:layout_height="42dp"
+        android:layout_height="30dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="20dp"
@@ -107,15 +107,32 @@
         android:layout_width="180dp"
         android:layout_height="40dp"
         android:layout_margin="10dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/rounded_button"
         android:gravity="center"
         android:text="@string/addToContacts"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.069"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextPinCode"
+        app:layout_constraintTop_toBottomOf="@+id/editTextWebsite"
         tools:text="@string/addToContacts" />
+
+    <Button
+        android:id="@+id/buttonPostData"
+        android:layout_width="180dp"
+        android:layout_height="40dp"
+        android:layout_margin="10dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="16dp"
+        android:background="@drawable/rounded_button"
+        android:gravity="center"
+        android:text="@string/postData"
+        app:layout_constraintHorizontal_bias="0.981"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextWebsite"
+        tools:text="@string/postData" />
 
     <Button
         android:id="@+id/buttonOpenCamera"
@@ -146,7 +163,7 @@
     <EditText
         android:id="@+id/editTextCompanyName"
         android:layout_width="0dp"
-        android:layout_height="42dp"
+        android:layout_height="30dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="20dp"
@@ -162,7 +179,7 @@
     <EditText
         android:id="@+id/editTextPosition"
         android:layout_width="0dp"
-        android:layout_height="42dp"
+        android:layout_height="30dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="20dp"
@@ -178,7 +195,7 @@
     <EditText
         android:id="@+id/editTextCity"
         android:layout_width="0dp"
-        android:layout_height="42dp"
+        android:layout_height="30dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="20dp"
@@ -194,7 +211,7 @@
     <EditText
         android:id="@+id/editTextPinCode"
         android:layout_width="0dp"
-        android:layout_height="42dp"
+        android:layout_height="30dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="20dp"
@@ -207,4 +224,19 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextCity"
         tools:text="@string/pinCode" />
 
+    <EditText
+        android:id="@+id/editTextWebsite"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/rounded_edittext"
+        android:gravity="center"
+        android:hint="@string/website"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextPinCode"
+        tools:text="@string/website" />
 </androidx.constraintlayout.widget.ConstraintLayout>

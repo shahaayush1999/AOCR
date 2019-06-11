@@ -8,7 +8,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.os.Bundle;
@@ -22,11 +21,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.provider.MediaStore;
 import android.net.Uri;
-import android.os.Bundle;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 import com.google.i18n.phonenumbers.PhoneNumberMatch;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,9 +43,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -45,9 +55,10 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     ImageView displayImage;
-    Button imageFromGallery;
-    Button openContacts;
-    Button imageFromCamera;
+    Button buttonImageFromGallery;
+    Button buttonOpenContacts;
+    Button buttonImageFromCamera;
+    Button buttonPostData;
     TextView displayStatus;
     EditText displayEmail;
     EditText displayPhone;
@@ -56,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     EditText displayPosition;
     EditText displayCity;
     EditText displayPinCode;
+    EditText displayWebsite;
 
     ProgressBar displayProgress;
 
@@ -65,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private TessBaseAPI mTess;
     private String datapath = "";
     private String currentPhotoPath;
+    private static final String TAG = "MainActivity.java";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,9 +85,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Buttons
-        openContacts = (Button) findViewById(R.id.buttonOpenContacts);
-        imageFromGallery = (Button) findViewById(R.id.buttonOpenGallery);
-        imageFromCamera = (Button) findViewById(R.id.buttonOpenCamera);
+        buttonOpenContacts = (Button) findViewById(R.id.buttonOpenContacts);
+        buttonImageFromGallery = (Button) findViewById(R.id.buttonOpenGallery);
+        buttonImageFromCamera = (Button) findViewById(R.id.buttonOpenCamera);
+        buttonPostData = (Button) findViewById(R.id.buttonPostData);
         //Image
         displayImage = (ImageView) findViewById(R.id.imageView);
         //Display field
@@ -87,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         displayPosition = (EditText) findViewById(R.id.editTextPosition);
         displayCity = (EditText) findViewById(R.id.editTextCity);
         displayPinCode = (EditText) findViewById(R.id.editTextPinCode);
+        displayWebsite = (EditText) findViewById(R.id.editTextWebsite); 
         //Progress Bar
         displayProgress = (ProgressBar) findViewById(R.id.progressBar);
         //set progress bar to be invisible
@@ -108,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         mTess.init(datapath, language);
 
         //import image from gallery
-        imageFromGallery.setOnClickListener(new View.OnClickListener() {
+        buttonImageFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openGallery();
@@ -116,15 +131,22 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //import image from Camera
-        imageFromCamera.setOnClickListener(new View.OnClickListener() {
+        buttonImageFromCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openCamera();
             }
         });
 
+        buttonPostData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new PostDataAsyncTask().execute();
+            }
+        });
+
         //Add the extracted info from Business Card to the phone's contacts...
-        openContacts.setOnClickListener(new View.OnClickListener() {
+        buttonOpenContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 addToContacts();
@@ -132,18 +154,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //todo make cleaner function regex replaceall for extract* functions where params = (str, "<stuff to be removed from string>" and returns new string with removed unnecessary spaces and punctuation and replace " *\- *" with " \- "
+    //todo make dialog to make user choose between click/pick image and replace both openCamera and openGallery button
     public String extractName(String str) {
         String returnString = "";
         System.out.println("Getting the Name");
         boolean matchFound = false;
-        final String NAME_REGEX = "([A-Z]([A-Z]*|\\.) +)([A-Z][A-Z]+-?)";
+        final String NAME_REGEX = "([A-Z]([A-Z]{2,}|\\.) +)([A-Z][A-Z]{2,}-?)";
         Pattern p = Pattern.compile(NAME_REGEX, Pattern.MULTILINE);
         Matcher m = p.matcher(str);
         if (m.find()) {
             matchFound = true;
             returnString = m.group();
         } else {
-            final String NAME_REGEX2 = "([A-Z]([a-zA-Z]*|\\.) +)([A-Z][a-zA-Z]+-?)+$";
+            final String NAME_REGEX2 = "([A-Z]([a-zA-Z]{2,}|\\.) +)([A-Z][a-zA-Z]{2,}-?)+$";
             p = Pattern.compile(NAME_REGEX2, Pattern.MULTILINE);
             m = p.matcher(str);
             if (m.find()) {
@@ -224,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                 if (matchFoundIndia == 0) {
                     returnString = numberList.get(0);
                 }
-                returnString = returnString.replaceAll("[ ()-]", ""); //to remove brackets, spaces and hyphens
+                returnString = returnString.replaceAll("[^+\\d]", ""); //to remove brackets, spaces and hyphens
                 System.out.println(returnString);
                 approachOneFail = false;
             } catch (IndexOutOfBoundsException e) {
@@ -291,6 +315,7 @@ public class MainActivity extends AppCompatActivity {
         return "";
     }
 
+    //todo doesn't work, try to recheck
     public String extractWebsite(String str) {
         String returnString;
         System.out.println("Getting the website");
@@ -304,8 +329,6 @@ public class MainActivity extends AppCompatActivity {
         System.out.println(returnString);
         return returnString;
     }
-
-    //public String extractAddress(String str)
 
     private void checkFile(File dir) {
         //directory does not exist, but we can successfully create it
@@ -464,11 +487,11 @@ public class MainActivity extends AppCompatActivity {
     private void imageLoadedRunOCR() {
         displayStatus.setText(R.string.statusImageLoadedRunOCR);
         clearFields();
-        new ProcessImageTask().execute(image); //Can add array of image over here to pass to background image processing
+        new ProcessImageAsyncTask().execute(image); //Can add array of image over here to pass to background image processing
     }
 
     //supports multiple images
-    private class ProcessImageTask extends AsyncTask<Bitmap, Integer, Long> {
+    private class ProcessImageAsyncTask extends AsyncTask<Bitmap, Integer, Long> {
         protected void onPreExecute() {
             displayProgress.setVisibility(View.VISIBLE);
         }
@@ -501,17 +524,17 @@ public class MainActivity extends AppCompatActivity {
         OCRimage = scaleBitmap(OCRimage);
         mTess.setImage(OCRimage);
         OCRresult = mTess.getUTF8Text();
-        System.out.println(OCRresult);
+        System.out.println("Printing raw OCR output\n" + OCRresult + "\nRaw OCR output ends here\n");
+
         name = extractName(OCRresult);
         email = extractEmail(OCRresult);
         phone = extractPhone(OCRresult);
         pinCode = extractPinCode(OCRresult);
         city = extractCity(OCRresult);
         position = extractJobTitle(OCRresult);
-        //address extractAddress(OCRresult);
         companyName = extractCompanyName(OCRresult);
         website = extractWebsite(OCRresult);
-        setFields(name, email, phone, companyName, position, city, pinCode);
+        setFields(name, email, phone, companyName, position, city, pinCode, website);
     }
 
     public Bitmap scaleBitmap(Bitmap yourBitmap) {
@@ -521,7 +544,7 @@ public class MainActivity extends AppCompatActivity {
         return resized;
     }
 
-    //todo check why clean files doesnt work
+    //todo check why clean files doesn't work
     private void cleanAppFiles() {
         File dir = new File("Android/data/com.example.aocr/files/Pictures");
         try {
@@ -531,8 +554,8 @@ public class MainActivity extends AppCompatActivity {
             e.getMessage();
         }
     }
-    
-    private void setFields(String name, String email, String phone, String company, String position, String city, String pinCode) {
+
+    private void setFields(String name, String email, String phone, String company, String position, String city, String pinCode, String website) {
         displayName.setText(name);
         displayEmail.setText(email);
         displayPhone.setText(phone);
@@ -540,6 +563,7 @@ public class MainActivity extends AppCompatActivity {
         displayPosition.setText(position);
         displayCity.setText(city);
         displayPinCode.setText(pinCode);
+        displayWebsite.setText(website);
     }
 
     private void setStatus(String status) {
@@ -547,6 +571,96 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void clearFields() {
-        setFields("","","","", "","","");
+        setFields("","","","", "","","", "");
+    }
+
+    public class PostDataAsyncTask extends AsyncTask<String, String, String> {
+        protected void onPreExecute() {
+            super.onPreExecute();
+            displayStatus.setText(R.string.statusAttemptingPostData);
+            displayProgress.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+                postText();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String lengthOfFile) {
+            displayStatus.setText(R.string.statusPostDataSuccessful);
+            displayProgress.setVisibility(View.GONE);
+        }
+    }
+
+    // this will post our text data
+    private void postText(){
+        try{
+            // url where the data will be posted
+            String postReceiverUrl = "http://10.0.2.2:8080/AOCR/insert.php";
+            //String postReceiverUrl = "http://192.168.64.3/AOCR/insert.php";
+            //String postReceiverUrl = "http://localhost:8080/AOCR/insert.php";
+            Log.v(TAG, "postURL: " + postReceiverUrl);
+
+            // HttpClient
+            HttpClient httpClient = new DefaultHttpClient();
+
+            // post header
+            HttpPost httpPost = new HttpPost(postReceiverUrl);
+
+            // add your data
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+            nameValuePairs.add(new BasicNameValuePair("fullname", displayName.getText().toString()));
+            nameValuePairs.add(new BasicNameValuePair("number", displayPhone.getText().toString()));
+            nameValuePairs.add(new BasicNameValuePair("email", displayEmail.getText().toString()));
+            nameValuePairs.add(new BasicNameValuePair("company", displayCompanyName.getText().toString()));
+            nameValuePairs.add(new BasicNameValuePair("position", displayPosition.getText().toString()));
+            nameValuePairs.add(new BasicNameValuePair("city", displayCity.getText().toString()));
+            nameValuePairs.add(new BasicNameValuePair("pincode", displayPinCode.getText().toString()));
+            nameValuePairs.add(new BasicNameValuePair("website", displayWebsite.getText().toString()));
+            //todo add login interface to show whos logged in, and send his user ID along later on. Now everything defaults to 1
+            nameValuePairs.add(new BasicNameValuePair("addedbyuserid", "1"));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+            // execute HTTP post request
+            HttpResponse response = httpClient.execute(httpPost);
+            HttpEntity resEntity = response.getEntity();
+
+            if (resEntity != null) {
+                final String responseStr = EntityUtils.toString(resEntity).trim();
+                Log.v(TAG, "Response: " +  responseStr);
+
+                //run on UI thread to show toast
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(MainActivity.this, responseStr, Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            }
+
+        } catch (Exception e) {
+            displayStatus.setText(R.string.statusPostDataFail);
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isConnectedToServer(String url, int timeout) {
+        try{
+            URL myUrl = new URL(url);
+            URLConnection connection = myUrl.openConnection();
+            connection.setConnectTimeout(timeout);
+            connection.connect();
+            return true;
+        } catch (Exception e) {
+            // Handle your exceptions
+            return false;
+        }
     }
 }

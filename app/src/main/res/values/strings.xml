@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">AOCR</string>
-
     <string name="addToContacts">Add to Contacts</string>
+    <string name="postData">Post Data</string>
     <string name="loadImage">Load Image</string>
     <string name="openCamera">Open Camera</string>
-    <string name="name">Name</string>
-    <string name="phoneNumber">Number</string>
+    <string name="name">Full Name</string>
+    <string name="phoneNumber">Phone Number</string>
     <string name="emailID">Email ID</string>
     <string name="companyName">Company name</string>
     <string name="position">Position at Company</string>
@@ -18,7 +18,10 @@
     <string name="statusImageFailedToLoad">Image failed to load</string>
     <string name="toastNoInfoToAddToContact">No information to add to contacts!</string>
     <string name="statusAttemptingOCR">Attempting OCR</string>
+    <string name="statusAttemptingPostData">Attempting Post Data</string>
     <string name="statusOCRResults">OCR Results</string>
+    <string name="statusPostDataSuccessful">Post Data Successful</string>
+    <string name="statusPostDataFail">Post Data Failure</string>
     <string name="imagesProcessedCount">Images Processed: </string>
     <string name="imagesProcessedPercentage">% Images Processed: </string>
 </resources>
