@@ -5,6 +5,10 @@
     <string name="loadImage">Load Image</string>
     <string name="openCamera">Open Camera</string>
     <string name="name">Full Name</string>
+    <string name="loginUsingPassword">Login Using Password</string>
+    <string name="getPasswordByText">Get Password By Text</string>
+    <string name="firstNamePlusLastName">First Name + Last Name</string>
+    <string name="password">Password</string>
     <string name="phoneNumber">Phone Number</string>
     <string name="emailID">Email ID</string>
     <string name="companyName">Company name</string>
