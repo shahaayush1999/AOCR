@@ -5,11 +5,13 @@
     <string name="loadImage">Load Image</string>
     <string name="openCamera">Open Camera</string>
     <string name="name">Full Name</string>
-    <string name="loginUsingPassword">Login Using Password</string>
+    <string name="loginUsingPassword">Login</string>
     <string name="getPasswordByText">Get Password By Text</string>
     <string name="firstNamePlusLastName">First Name + Last Name</string>
-    <string name="password">Password</string>
+    <string name="passWord">Password</string>
     <string name="phoneNumber">Phone Number</string>
+    <string name="phoneNumberTenDigit">10 Digit Phone Number</string>
+    <string name="countryCode">Code</string>
     <string name="emailID">Email ID</string>
     <string name="companyName">Company name</string>
     <string name="position">Position at Company</string>
@@ -26,6 +28,21 @@
     <string name="statusOCRResults">OCR Results</string>
     <string name="statusPostDataSuccessful">Post Data Successful</string>
     <string name="statusPostDataFail">Post Data Failure</string>
+    <string name="statusWrongPassword">Wrong Password, Try Again.</string>
+    <string name="statusFirstLoginBlankPassword">First Login? Try Blank Password</string>
     <string name="imagesProcessedCount">Images Processed: </string>
     <string name="imagesProcessedPercentage">% Images Processed: </string>
+
+
+    <string name="username">Username</string>
+    <string name="sign_in">Sign In</string>
+    <string name="register">Register</string>
+    <string name="full_name">Full Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="already_having_account">Already Having an Account?</string>
+    <string name="log_in">Log In</string>
+    <string name="not_having_account">Not Having an Account?</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="logout">Logout</string>
+
 </resources>
