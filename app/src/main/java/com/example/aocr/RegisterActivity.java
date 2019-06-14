@@ -142,6 +142,8 @@ public class RegisterActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        //todo fix the "cannot convert jsonarray to jsonobject error HERE"
         JsonObjectRequest jsArrayRequest = new JsonObjectRequest
                 (Request.Method.POST, register_url, request, new Response.Listener<JSONObject>() {
                     @Override
