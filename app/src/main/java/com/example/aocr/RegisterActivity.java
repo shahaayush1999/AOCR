@@ -18,22 +18,47 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class RegisterActivity extends AppCompatActivity {
+    private static final String KEY_USERID = "userid";
     private static final String KEY_STATUS = "status";
     private static final String KEY_MESSAGE = "message";
-    private static final String KEY_FULL_NAME = "full_name";
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_PASSWORD = "password";
     private static final String KEY_EMPTY = "";
-    private EditText etUsername;
+
+    private static final String KEY_FULLNAME = "fullname";
+    private static final String KEY_NUMBER = "number";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_COMPANY = "company";
+    private static final String KEY_POSITION = "position";
+    private static final String KEY_CITY = "city";
+    private static final String KEY_PINCODE = "pincode";
+    private static final String KEY_WEBSITE = "website";
+    private static final String KEY_PASSWORD = "password";
+
+    private EditText etFullName;
+    private EditText etNumber;
+    private EditText etEmail;
+    private EditText etCompany;
+    private EditText etPosition;
+    private EditText etCity;
+    private EditText etPinCode;
+    private EditText etWebsite;
     private EditText etPassword;
     private EditText etConfirmPassword;
-    private EditText etFullName;
-    private String username;
+    private Button Login;
+    private Button Register;
+
+    private String fullName;
+    private String number;
+    private String email;
+    private String company;
+    private String position;
+    private String city;
+    private String pincode;
+    private String website;
     private String password;
     private String confirmPassword;
-    private String fullName;
+
     private ProgressDialog pDialog;
-    private String register_url = "http://localhost:8080/AOCR2/register.php";
+    private String register_url = "http://10.0.2.2:8080/AOCR2/register.php";
     private SessionHandler session;
 
     @Override
@@ -42,36 +67,38 @@ public class RegisterActivity extends AppCompatActivity {
         session = new SessionHandler(getApplicationContext());
         setContentView(R.layout.activity_register);
 
-        etUsername = findViewById(R.id.etUsername);
+        etFullName = findViewById(R.id.etFullName);
+        etNumber = findViewById(R.id.etNumber);
+        etEmail = findViewById(R.id.etEmail);
+        etCompany = findViewById(R.id.etCompanyName);
+        etPosition = findViewById(R.id.etPosition);
+        etCity = findViewById(R.id.etCity);
+        etPinCode = findViewById(R.id.etPinCode);
+        etWebsite = findViewById(R.id.etWebsite);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
-        etFullName = findViewById(R.id.etFullName);
 
-        Button login = findViewById(R.id.btnRegisterLogin);
-        Button register = findViewById(R.id.btnRegister);
+        Login = findViewById(R.id.btnRegisterLogin);
+        Register = findViewById(R.id.btnRegister);
+
+        //todo make every entry lowercase before storing in database
+        Register.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gatherDataFromEditText();
+                if (validateInputs()) {
+                    registerUser();
+                }
+            }
+        });
 
         //Launch Login screen when Login Button is clicked
-        login.setOnClickListener(new View.OnClickListener() {
+        Login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(i);
                 finish();
-            }
-        });
-
-        register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Retrieve the data entered in the edit texts
-                username = etUsername.getText().toString().toLowerCase().trim();
-                password = etPassword.getText().toString().trim();
-                confirmPassword = etConfirmPassword.getText().toString().trim();
-                fullName = etFullName.getText().toString().trim();
-                if (validateInputs()) {
-                    registerUser();
-                }
-
             }
         });
 
@@ -92,11 +119,10 @@ public class RegisterActivity extends AppCompatActivity {
     /**
      * Launch Dashboard Activity on Successful Sign Up
      */
-    private void loadDashboard() {
-        Intent i = new Intent(getApplicationContext(), DashboardActivity.class);
+    private void loadMainactivity() {
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(i);
         finish();
-
     }
 
     private void registerUser() {
@@ -104,10 +130,15 @@ public class RegisterActivity extends AppCompatActivity {
         JSONObject request = new JSONObject();
         try {
             //Populate the request parameters
-            request.put(KEY_USERNAME, username);
+            request.put(KEY_FULLNAME, fullName);
+            request.put(KEY_NUMBER, number);
+            request.put(KEY_EMAIL, email);
+            request.put(KEY_COMPANY, company);
+            request.put(KEY_POSITION, position);
+            request.put(KEY_CITY, city);
+            request.put(KEY_PINCODE, pincode);
+            request.put(KEY_WEBSITE, website);
             request.put(KEY_PASSWORD, password);
-            request.put(KEY_FULL_NAME, fullName);
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -117,18 +148,17 @@ public class RegisterActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         pDialog.dismiss();
                         try {
-                            //Check if user got registered successfully
-                            if (response.getInt(KEY_STATUS) == 0) {
+                            if (response.getInt(KEY_STATUS) == 0 || response.getInt(KEY_STATUS) == 1) {
+                                //Status 0 = Uninvited profile created, Status 1 = Invited profile created
                                 //Set the user session
-                                session.loginUser(username,fullName);
-                                loadDashboard();
+                                session.loginUser(response.getInt(KEY_USERID), response.getString(KEY_FULLNAME));
+                                System.out.println(response.getString(KEY_MESSAGE));
+                                loadMainactivity();
 
-                            }else if(response.getInt(KEY_STATUS) == 1){
-                                //Display error message if username is already existsing
-                                etUsername.setError("Username already taken!");
-                                etUsername.requestFocus();
-
-                            }else{
+                            } else if(response.getInt(KEY_STATUS) == 2) {
+                                //Display error message if user is already existing AND registered
+                                etNumber.setError("Number Already registered! Please Log in");
+                            } else {
                                 Toast.makeText(getApplicationContext(),
                                         response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
 
@@ -165,28 +195,59 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
 
         }
-        if (KEY_EMPTY.equals(username)) {
-            etUsername.setError("Username cannot be empty");
-            etUsername.requestFocus();
+        if (KEY_EMPTY.equals(number)) {
+            etFullName.setError("Full Name cannot be empty");
+            etFullName.requestFocus();
             return false;
+
+        }
+        if (KEY_EMPTY.equals(company)) {
+            etFullName.setError("Full Name cannot be empty");
+            etFullName.requestFocus();
+            return false;
+
+        }
+        if (KEY_EMPTY.equals(position)) {
+            etFullName.setError("Full Name cannot be empty");
+            etFullName.requestFocus();
+            return false;
+
+        }
+        if (KEY_EMPTY.equals(city)) {
+            etFullName.setError("Full Name cannot be empty");
+            etFullName.requestFocus();
+            return false;
+
         }
         if (KEY_EMPTY.equals(password)) {
             etPassword.setError("Password cannot be empty");
             etPassword.requestFocus();
             return false;
         }
-
         if (KEY_EMPTY.equals(confirmPassword)) {
             etConfirmPassword.setError("Confirm Password cannot be empty");
             etConfirmPassword.requestFocus();
             return false;
         }
-        if (!password.equals(confirmPassword)) {
+        if (!(password.equals(confirmPassword))) {
             etConfirmPassword.setError("Password and Confirm Password does not match");
             etConfirmPassword.requestFocus();
             return false;
         }
 
         return true;
+    }
+
+    public void gatherDataFromEditText() {
+        fullName = etFullName.getText().toString().toLowerCase();
+        number = etNumber.getText().toString();
+        email = etEmail.getText().toString().toLowerCase();
+        company = etCompany.getText().toString().toLowerCase();
+        position = etPosition.getText().toString().toLowerCase();
+        city = etCity.getText().toString();
+        pincode = etPinCode.getText().toString();
+        website = etWebsite.getText().toString().toLowerCase();
+        password = etPassword.getText().toString();
+        confirmPassword = etConfirmPassword.getText().toString();
     }
 }

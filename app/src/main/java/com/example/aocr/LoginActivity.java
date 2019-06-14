@@ -18,18 +18,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
+    //todo add userid key and convert input number to string and login
     private static final String KEY_STATUS = "status";
     private static final String KEY_MESSAGE = "message";
-    private static final String KEY_FULL_NAME = "full_name";
-    private static final String KEY_USERNAME = "username";
+    private static final String KEY_FULLNAME = "fullname";
+    private static final String KEY_USERID = "userid";
+    private static final String KEY_NUMBER = "phonenumber";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_EMPTY = "";
-    private EditText etUsername;
+    private EditText etPhoneNumber;
     private EditText etPassword;
-    private String username;
+    private String phoneNumber;
     private String password;
     private ProgressDialog pDialog;
-    private String login_url = "http://localhost:8080/AOCR2/login.php";
+    private String login_url = "http://10.0.2.2:8080/AOCR2/login.php";
     private SessionHandler session;
 
     @Override
@@ -38,11 +40,11 @@ public class LoginActivity extends AppCompatActivity {
         session = new SessionHandler(getApplicationContext());
 
         if(session.isLoggedIn()){
-            loadDashboard();
+            loadMainActivity();
         }
         setContentView(R.layout.activity_login);
 
-        etUsername = findViewById(R.id.etLoginUsername);
+        etPhoneNumber = findViewById(R.id.etLoginPhoneNumber);
         etPassword = findViewById(R.id.etLoginPassword);
 
         Button register = findViewById(R.id.btnLoginRegister);
@@ -62,7 +64,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //Retrieve the data entered in the edit texts
-                username = etUsername.getText().toString().toLowerCase().trim();
+                phoneNumber = etPhoneNumber.getText().toString().toLowerCase().trim();
                 password = etPassword.getText().toString().trim();
                 if (validateInputs()) {
                     login();
@@ -74,11 +76,10 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Launch Dashboard Activity on Successful Login
      */
-    private void loadDashboard() {
-        Intent i = new Intent(getApplicationContext(), DashboardActivity.class);
+    private void loadMainActivity() {
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(i);
         finish();
-
     }
 
     /**
@@ -96,10 +97,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private void login() {
         displayLoader();
-        JSONObject request = new JSONObject();
+        JSONObject request = null;
         try {
+            request = new JSONObject("{}");
             //Populate the request parameters
-            request.put(KEY_USERNAME, username);
+            request.put(KEY_NUMBER, phoneNumber);
             request.put(KEY_PASSWORD, password);
 
         } catch (JSONException e) {
@@ -112,15 +114,12 @@ public class LoginActivity extends AppCompatActivity {
                         pDialog.dismiss();
                         try {
                             //Check if user got logged in successfully
-
                             if (response.getInt(KEY_STATUS) == 0) {
-                                session.loginUser(username,response.getString(KEY_FULL_NAME));
-                                loadDashboard();
+                                session.loginUser(response.getInt(KEY_USERID),response.getString(KEY_FULLNAME));
+                                loadMainActivity();
 
-                            }else{
-                                Toast.makeText(getApplicationContext(),
-                                        response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
-
+                            } else {
+                                Toast.makeText(getApplicationContext(), response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -135,10 +134,8 @@ public class LoginActivity extends AppCompatActivity {
                         //Display error message whenever an error occurs
                         Toast.makeText(getApplicationContext(),
                                 error.getMessage(), Toast.LENGTH_SHORT).show();
-
                     }
                 });
-
         // Access the RequestQueue through your singleton class.
         MySingleton.getInstance(this).addToRequestQueue(jsArrayRequest);
     }
@@ -148,9 +145,9 @@ public class LoginActivity extends AppCompatActivity {
      * @return
      */
     private boolean validateInputs() {
-        if(KEY_EMPTY.equals(username)){
-            etUsername.setError("Username cannot be empty");
-            etUsername.requestFocus();
+        if(KEY_EMPTY.equals(phoneNumber)){
+            etPhoneNumber.setError("Phone Number cannot be empty");
+            etPhoneNumber.requestFocus();
             return false;
         }
         if(KEY_EMPTY.equals(password)){

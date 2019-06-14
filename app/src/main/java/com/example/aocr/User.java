@@ -2,13 +2,15 @@ package com.example.aocr;
 
 import java.util.Date;
 
-public class User {
-    String username;
-    String fullName;
-    Date sessionExpiryDate;
+//if anything breaks then convert all declarations and functions to public
 
-    public void setUsername(String username) {
-        this.username = username;
+public class User {
+    private String userID;
+    private String fullName;
+    private Date sessionExpiryDate;
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
     public void setFullName(String fullName) {
@@ -19,8 +21,8 @@ public class User {
         this.sessionExpiryDate = sessionExpiryDate;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUserID() {
+        return userID;
     }
 
     public String getFullName() {

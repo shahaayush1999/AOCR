@@ -10,7 +10,7 @@
     <string name="firstNamePlusLastName">First Name + Last Name</string>
     <string name="passWord">Password</string>
     <string name="phoneNumber">Phone Number</string>
-    <string name="phoneNumberTenDigit">10 Digit Phone Number</string>
+    <string name="phoneNumberPlusCountryCode">+Country Code + Phone Number</string>
     <string name="countryCode">Code</string>
     <string name="emailID">Email ID</string>
     <string name="companyName">Company name</string>
@@ -33,8 +33,6 @@
     <string name="imagesProcessedCount">Images Processed: </string>
     <string name="imagesProcessedPercentage">% Images Processed: </string>
 
-
-    <string name="username">Username</string>
     <string name="sign_in">Sign In</string>
     <string name="register">Register</string>
     <string name="full_name">Full Name</string>

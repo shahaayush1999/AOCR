@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private TessBaseAPI mTess;
     private String datapath = "";
     private String currentPhotoPath;
+    private String OCRResult, name, email, phone, pinCode, position, website, companyName, city;
     private static final String TAG = "MainActivity.java";
 
     @Override
@@ -154,6 +155,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //todo add batch mode
+    //todo get user data from session handler, look at dashboard activity code
+    //todo make all data lowercase before storing in database
+    //todo add logout button, read & copy code from "Dashboardactivity" to log user out. Remove timeout from session handler
     //todo make cleaner function regex replaceall for extract* functions where params = (str, "<stuff to be removed from string>" and returns new string with removed unnecessary spaces and punctuation and replace " *\- *" with " \- "
     //todo make dialog to make user choose between click/pick image and replace both openCamera and openGallery button
     public String extractName(String str) {
@@ -518,26 +523,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //todo use company name from the value returned from email and website
     public void processImage(Bitmap OCRimage) {
-        String OCRresult, name, email, phone, pinCode, position, website, address, companyName, city;
         OCRimage = scaleBitmap(OCRimage);
         mTess.setImage(OCRimage);
-        OCRresult = mTess.getUTF8Text();
-        System.out.println("Printing raw OCR output\n" + OCRresult + "\nRaw OCR output ends here\n");
-
-        name = extractName(OCRresult);
-        email = extractEmail(OCRresult);
-        phone = extractPhone(OCRresult);
-        pinCode = extractPinCode(OCRresult);
-        city = extractCity(OCRresult);
-        position = extractJobTitle(OCRresult);
-        companyName = extractCompanyName(OCRresult);
-        website = extractWebsite(OCRresult);
+        OCRResult = mTess.getUTF8Text();
+        System.out.println("Printing raw OCR output\n" + OCRResult + "\nRaw OCR output ends here\n");
+        extractDataFromEditText();
         setFields(name, email, phone, companyName, position, city, pinCode, website);
     }
 
-    public Bitmap scaleBitmap(Bitmap yourBitmap) {
+    //todo use company name from the value returned from email and website
+    private void extractDataFromEditText() {
+        name = extractName(OCRResult);
+        email = extractEmail(OCRResult);
+        phone = extractPhone(OCRResult);
+        pinCode = extractPinCode(OCRResult);
+        city = extractCity(OCRResult);
+        position = extractJobTitle(OCRResult);
+        companyName = extractCompanyName(OCRResult);
+        website = extractWebsite(OCRResult);
+    }
+
+    private Bitmap scaleBitmap(Bitmap yourBitmap) {
         float scale, width = yourBitmap.getWidth(), height = yourBitmap.getHeight();
         scale = (float) Math.sqrt(720*1280 / (width * height));
         Bitmap resized = Bitmap.createScaledBitmap(yourBitmap, (int) (width * scale), (int) (height * scale), true);
@@ -550,6 +557,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             for (File child : dir.listFiles())
                 child.delete();
+            System.out.println("Successfully deleted all app files");
         } catch (NullPointerException e) {
             e.getMessage();
         }
@@ -599,12 +607,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // this will post our text data
+    //todo send userID in POSTDATA fn in mainactivity to backend
     private void postText(){
         try{
             // url where the data will be posted
             String postReceiverUrl = "http://10.0.2.2:8080/AOCR/insert.php";
-            //String postReceiverUrl = "http://192.168.64.3/AOCR/insert.php";
-            //String postReceiverUrl = "http://localhost:8080/AOCR/insert.php";
             Log.v(TAG, "postURL: " + postReceiverUrl);
 
             // HttpClient
