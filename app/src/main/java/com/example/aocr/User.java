@@ -5,11 +5,11 @@ import java.util.Date;
 //if anything breaks then convert all declarations and functions to public
 
 public class User {
-    private String userID;
+    private Integer userID;
     private String fullName;
     private Date sessionExpiryDate;
 
-    public void setUserID(String userID) {
+    public void setUserID(Integer userID) {
         this.userID = userID;
     }
 
@@ -21,7 +21,7 @@ public class User {
         this.sessionExpiryDate = sessionExpiryDate;
     }
 
-    public String getUserID() {
+    public Integer getUserID() {
         return userID;
     }
 

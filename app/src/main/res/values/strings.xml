@@ -32,7 +32,6 @@
     <string name="statusFirstLoginBlankPassword">First Login? Try Blank Password</string>
     <string name="imagesProcessedCount">Images Processed: </string>
     <string name="imagesProcessedPercentage">% Images Processed: </string>
-
     <string name="sign_in">Sign In</string>
     <string name="register">Register</string>
     <string name="full_name">Full Name</string>

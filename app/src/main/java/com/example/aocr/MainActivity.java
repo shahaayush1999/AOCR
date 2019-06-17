@@ -54,11 +54,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
+    private SessionHandler session;
+    private User user;
+
     ImageView displayImage;
     Button buttonImageFromGallery;
     Button buttonOpenContacts;
     Button buttonImageFromCamera;
     Button buttonPostData;
+    Button logoutBtn;
+
     TextView displayStatus;
     EditText displayEmail;
     EditText displayPhone;
@@ -85,11 +90,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Initialize session for user using shared pref
+        session = new SessionHandler(getApplicationContext());
+        user = session.getUserDetails();
+
         //Buttons
         buttonOpenContacts = (Button) findViewById(R.id.buttonOpenContacts);
         buttonImageFromGallery = (Button) findViewById(R.id.buttonOpenGallery);
         buttonImageFromCamera = (Button) findViewById(R.id.buttonOpenCamera);
         buttonPostData = (Button) findViewById(R.id.buttonPostData);
+        logoutBtn = (Button) findViewById(R.id.btnLogout);
         //Image
         displayImage = (ImageView) findViewById(R.id.imageView);
         //Display field
@@ -146,6 +156,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        logoutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                session.logoutUser();
+                Intent i = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
+
         //Add the extracted info from Business Card to the phone's contacts...
         buttonOpenContacts.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,9 +176,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //todo add batch mode
-    //todo get user data from session handler, look at dashboard activity code
     //todo make all data lowercase before storing in database
-    //todo add logout button, read & copy code from "Dashboardactivity" to log user out. Remove timeout from session handler
     //todo make cleaner function regex replaceall for extract* functions where params = (str, "<stuff to be removed from string>" and returns new string with removed unnecessary spaces and punctuation and replace " *\- *" with " \- "
     //todo make dialog to make user choose between click/pick image and replace both openCamera and openGallery button
     public String extractName(String str) {
@@ -620,18 +638,21 @@ public class MainActivity extends AppCompatActivity {
             // post header
             HttpPost httpPost = new HttpPost(postReceiverUrl);
 
+            //extract data from edittext to post data
+            extractDataFromEditText();
+
             // add your data
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair("fullname", displayName.getText().toString()));
-            nameValuePairs.add(new BasicNameValuePair("number", displayPhone.getText().toString()));
-            nameValuePairs.add(new BasicNameValuePair("email", displayEmail.getText().toString()));
-            nameValuePairs.add(new BasicNameValuePair("company", displayCompanyName.getText().toString()));
-            nameValuePairs.add(new BasicNameValuePair("position", displayPosition.getText().toString()));
-            nameValuePairs.add(new BasicNameValuePair("city", displayCity.getText().toString()));
-            nameValuePairs.add(new BasicNameValuePair("pincode", displayPinCode.getText().toString()));
-            nameValuePairs.add(new BasicNameValuePair("website", displayWebsite.getText().toString()));
-            //todo add login interface to show whos logged in, and send his user ID along later on. Now everything defaults to 1
-            nameValuePairs.add(new BasicNameValuePair("addedbyuserid", "1"));
+            nameValuePairs.add(new BasicNameValuePair("fullname", name));
+            nameValuePairs.add(new BasicNameValuePair("number", phone));
+            nameValuePairs.add(new BasicNameValuePair("email", email));
+            nameValuePairs.add(new BasicNameValuePair("company", companyName));
+            nameValuePairs.add(new BasicNameValuePair("position", position));
+            nameValuePairs.add(new BasicNameValuePair("city", city));
+            nameValuePairs.add(new BasicNameValuePair("pincode", pinCode));
+            nameValuePairs.add(new BasicNameValuePair("website", website));
+            nameValuePairs.add(new BasicNameValuePair("addedbyuserid", user.getUserID().toString()));
+
 
             httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 

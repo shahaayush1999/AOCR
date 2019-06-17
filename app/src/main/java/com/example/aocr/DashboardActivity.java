@@ -20,7 +20,7 @@ public class DashboardActivity extends AppCompatActivity {
         String str = "Welcome "+user.getFullName()+", your session will expire on "+user.getSessionExpiryDate();
         welcomeText.setText(str);
 
-        Button logoutBtn = findViewById(R.id.btnLogout);
+        Button logoutBtn = findViewById(R.id.btnDashBoardLogout);
 
         logoutBtn.setOnClickListener(new View.OnClickListener() {
             @Override

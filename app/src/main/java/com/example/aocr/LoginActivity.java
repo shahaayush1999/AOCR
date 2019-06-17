@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,15 +25,15 @@ public class LoginActivity extends AppCompatActivity {
     private static final String KEY_MESSAGE = "message";
     private static final String KEY_FULLNAME = "fullname";
     private static final String KEY_USERID = "userid";
-    private static final String KEY_NUMBER = "phonenumber";
+    private static final String KEY_PHONE = "phone";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_EMPTY = "";
     private EditText etPhoneNumber;
     private EditText etPassword;
-    private String phoneNumber;
+    private String phone;
     private String password;
     private ProgressDialog pDialog;
-    private String login_url = "http://10.0.2.2:8080/AOCR2/login.php";
+    private String login_url = "http://10.0.2.2:8080/AOCR/login.php";
     private SessionHandler session;
 
     @Override
@@ -54,9 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(i);
-                finish();
+                loadRegisterActivity();
             }
         });
 
@@ -64,8 +64,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //Retrieve the data entered in the edit texts
-                phoneNumber = etPhoneNumber.getText().toString().toLowerCase().trim();
-                password = etPassword.getText().toString().trim();
+                phone = etPhoneNumber.getText().toString().toLowerCase().trim();
+                password = etPassword.getText().toString();
                 if (validateInputs()) {
                     login();
                 }
@@ -101,25 +101,42 @@ public class LoginActivity extends AppCompatActivity {
         try {
             request = new JSONObject("{}");
             //Populate the request parameters
-            request.put(KEY_NUMBER, phoneNumber);
+            request.put(KEY_PHONE, phone);
             request.put(KEY_PASSWORD, password);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        Log.i("tagconvertstr", "["+request+"]");
+
         JsonObjectRequest jsArrayRequest = new JsonObjectRequest
                 (Request.Method.POST, login_url, request, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         pDialog.dismiss();
                         try {
-                            //Check if user got logged in successfully
-                            if (response.getInt(KEY_STATUS) == 0) {
-                                session.loginUser(response.getInt(KEY_USERID),response.getString(KEY_FULLNAME));
-                                loadMainActivity();
-
-                            } else {
-                                Toast.makeText(getApplicationContext(), response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
+                            //Check if user got logged in successfully or errors
+                            switch(response.getInt(KEY_STATUS)) {
+                                case 0: //logged in successfully
+                                    session.loginUser(response.getInt(KEY_USERID), response.getString(KEY_FULLNAME));
+                                    System.out.println(response.getString(KEY_MESSAGE));
+                                    loadMainActivity();
+                                    break;
+                                case 1: //wrong password
+                                    etPassword.setError("Please check password");
+                                    etPassword.requestFocus();
+                                    break;
+                                case 2: //Invalid phone number or bad format
+                                    etPhoneNumber.setError("Number invalid or not registered : 2");
+                                    etPhoneNumber.requestFocus();
+                                    break;
+                                case 4: //Invited User, redirect to registration page
+                                    Toast.makeText(getApplicationContext(), "Please register first", Toast.LENGTH_SHORT).show();
+                                    loadRegisterActivity();
+                                    break;
+                                default:
+                                    Toast.makeText(getApplicationContext(), response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -145,7 +162,7 @@ public class LoginActivity extends AppCompatActivity {
      * @return
      */
     private boolean validateInputs() {
-        if(KEY_EMPTY.equals(phoneNumber)){
+        if(KEY_EMPTY.equals(phone)){
             etPhoneNumber.setError("Phone Number cannot be empty");
             etPhoneNumber.requestFocus();
             return false;
@@ -156,5 +173,11 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    private void loadRegisterActivity() {
+        Intent i = new Intent(LoginActivity.this, RegisterActivity.class);
+        startActivity(i);
+        finish();
     }
 }

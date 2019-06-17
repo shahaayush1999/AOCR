@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView"/>
 
-    <EditText android:id="@+id/etNumber"
+    <EditText android:id="@+id/etPhone"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
@@ -71,7 +71,7 @@
         android:padding="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etNumber"/>
+        app:layout_constraintTop_toBottomOf="@+id/etPhone"/>
 
     <EditText android:id="@+id/etCompanyName"
         android:layout_width="0dp"

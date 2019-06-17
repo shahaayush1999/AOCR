@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,7 +26,7 @@ public class RegisterActivity extends AppCompatActivity {
     private static final String KEY_EMPTY = "";
 
     private static final String KEY_FULLNAME = "fullname";
-    private static final String KEY_NUMBER = "number";
+    private static final String KEY_PHONE = "phone";
     private static final String KEY_EMAIL = "email";
     private static final String KEY_COMPANY = "company";
     private static final String KEY_POSITION = "position";
@@ -34,7 +36,7 @@ public class RegisterActivity extends AppCompatActivity {
     private static final String KEY_PASSWORD = "password";
 
     private EditText etFullName;
-    private EditText etNumber;
+    private EditText etPhone;
     private EditText etEmail;
     private EditText etCompany;
     private EditText etPosition;
@@ -47,7 +49,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Button Register;
 
     private String fullName;
-    private String number;
+    private String phone;
     private String email;
     private String company;
     private String position;
@@ -58,7 +60,7 @@ public class RegisterActivity extends AppCompatActivity {
     private String confirmPassword;
 
     private ProgressDialog pDialog;
-    private String register_url = "http://10.0.2.2:8080/AOCR2/register.php";
+    private String register_url = "http://10.0.2.2:8080/AOCR/register.php";
     private SessionHandler session;
 
     @Override
@@ -68,7 +70,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         etFullName = findViewById(R.id.etFullName);
-        etNumber = findViewById(R.id.etNumber);
+        etPhone = findViewById(R.id.etPhone);
         etEmail = findViewById(R.id.etEmail);
         etCompany = findViewById(R.id.etCompanyName);
         etPosition = findViewById(R.id.etPosition);
@@ -96,9 +98,7 @@ public class RegisterActivity extends AppCompatActivity {
         Login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
-                startActivity(i);
-                finish();
+                loadLoginActivity();
             }
         });
 
@@ -119,19 +119,26 @@ public class RegisterActivity extends AppCompatActivity {
     /**
      * Launch Dashboard Activity on Successful Sign Up
      */
-    private void loadMainactivity() {
+    private void loadMainActivity() {
         Intent i = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(i);
+        finish();
+    }
+
+    private void loadLoginActivity() {
+        Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
         startActivity(i);
         finish();
     }
 
     private void registerUser() {
         displayLoader();
-        JSONObject request = new JSONObject();
+        JSONObject request = null;
         try {
+            request = new JSONObject("{}");
             //Populate the request parameters
             request.put(KEY_FULLNAME, fullName);
-            request.put(KEY_NUMBER, number);
+            request.put(KEY_PHONE, phone);
             request.put(KEY_EMAIL, email);
             request.put(KEY_COMPANY, company);
             request.put(KEY_POSITION, position);
@@ -143,42 +150,42 @@ public class RegisterActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //todo fix the "cannot convert jsonarray to jsonobject error HERE"
+        Log.i("tagconvertstr", "["+request+"]");
+
         JsonObjectRequest jsArrayRequest = new JsonObjectRequest
                 (Request.Method.POST, register_url, request, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         pDialog.dismiss();
                         try {
-                            if (response.getInt(KEY_STATUS) == 0 || response.getInt(KEY_STATUS) == 1) {
-                                //Status 0 = Uninvited profile created, Status 1 = Invited profile created
-                                //Set the user session
-                                session.loginUser(response.getInt(KEY_USERID), response.getString(KEY_FULLNAME));
-                                System.out.println(response.getString(KEY_MESSAGE));
-                                loadMainactivity();
-
-                            } else if(response.getInt(KEY_STATUS) == 2) {
-                                //Display error message if user is already existing AND registered
-                                etNumber.setError("Number Already registered! Please Log in");
-                            } else {
-                                Toast.makeText(getApplicationContext(),
-                                        response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
-
+                            switch(response.getInt(KEY_STATUS)) {
+                                case 0: //Uninvited profile created
+                                case 3: //Invited profile created
+                                    //Set the user session
+                                    session.loginUser(response.getInt(KEY_USERID), response.getString(KEY_FULLNAME));
+                                    System.out.println(response.getString(KEY_MESSAGE));
+                                    loadMainActivity();
+                                    break;
+                                case 1: //User Exists and is registered on app, so ask to login instead
+                                    Toast.makeText(getApplicationContext(),
+                                            response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
+                                    break;
+                                default:
+                                    Toast.makeText(getApplicationContext(),
+                                            response.getString(KEY_MESSAGE), Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
                 }, new Response.ErrorListener() {
-
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         pDialog.dismiss();
-
+                        //todo fix the "cannot convert jsonarray to jsonobject error HERE"
                         //Display error message whenever an error occurs
                         Toast.makeText(getApplicationContext(),
                                 error.getMessage(), Toast.LENGTH_SHORT).show();
-
                     }
                 });
 
@@ -197,27 +204,27 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
 
         }
-        if (KEY_EMPTY.equals(number)) {
-            etFullName.setError("Full Name cannot be empty");
-            etFullName.requestFocus();
+        if (KEY_EMPTY.equals(phone)) {
+            etPhone.setError("Full Name cannot be empty");
+            etPhone.requestFocus();
             return false;
 
         }
         if (KEY_EMPTY.equals(company)) {
-            etFullName.setError("Full Name cannot be empty");
-            etFullName.requestFocus();
+            etCompany.setError("Full Name cannot be empty");
+            etCompany.requestFocus();
             return false;
 
         }
         if (KEY_EMPTY.equals(position)) {
-            etFullName.setError("Full Name cannot be empty");
-            etFullName.requestFocus();
+            etPosition.setError("Full Name cannot be empty");
+            etPosition.requestFocus();
             return false;
 
         }
         if (KEY_EMPTY.equals(city)) {
-            etFullName.setError("Full Name cannot be empty");
-            etFullName.requestFocus();
+            etCity.setError("Full Name cannot be empty");
+            etCity.requestFocus();
             return false;
 
         }
@@ -242,7 +249,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     public void gatherDataFromEditText() {
         fullName = etFullName.getText().toString().toLowerCase();
-        number = etNumber.getText().toString();
+        phone = etPhone.getText().toString();
         email = etEmail.getText().toString().toLowerCase();
         company = etCompany.getText().toString().toLowerCase();
         position = etPosition.getText().toString().toLowerCase();
